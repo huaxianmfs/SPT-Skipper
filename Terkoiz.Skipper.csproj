@@ -1,0 +1,128 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <OutputType>Library</OutputType>
+    <RootNamespace>Terkoiz.Skipper</RootNamespace>
+    <AssemblyName>terkoiz-skipper</AssemblyName>
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+
+    <OutputPath>bin\$(Configuration)\</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+
+    <Deterministic>true</Deterministic>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <NoWarn>CS0618;CS0612;CS0436</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <TarkovDir Condition=" '$(TarkovDir)' == '' ">D:\SPT-5.0.0-47242-BE\</TarkovDir>
+
+    <BepInExCoreDir>$(TarkovDir)BepInEx\core\</BepInExCoreDir>
+    <BepInExInteropDir>$(TarkovDir)BepInEx\interop\</BepInExInteropDir>
+    <SptushonkaDir>$(TarkovDir)BepInEx\plugins\sptushonka\</SptushonkaDir>
+    <ManagedDir>$(TarkovDir)EscapeFromTarkov_Data\Managed\</ManagedDir>
+  </PropertyGroup>
+
+  <!-- BepInEx 6 核心 -->
+  <ItemGroup>
+      <Reference Include="Sirenix.Serialization">
+      <HintPath>$(BepInExInteropDir)Sirenix.Serialization.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Sirenix.Utilities">
+      <HintPath>$(BepInExInteropDir)Sirenix.Utilities.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="BepInEx.Core">
+      <HintPath>$(BepInExCoreDir)BepInEx.Core.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="BepInEx.Unity.IL2CPP">
+      <HintPath>$(BepInExCoreDir)BepInEx.Unity.IL2CPP.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Il2CppInterop.Runtime">
+      <HintPath>$(BepInExCoreDir)Il2CppInterop.Runtime.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Il2CppInterop.Common">
+      <HintPath>$(BepInExCoreDir)Il2CppInterop.Common.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="0Harmony">
+      <HintPath>$(BepInExCoreDir)0Harmony.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <!-- SPTushonka 库 -->
+  <ItemGroup>
+    <Reference Include="SPTushonka.Common">
+      <HintPath>$(SptushonkaDir)SPTushonka.Common.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="SPTushonka.Reflection">
+      <HintPath>$(SptushonkaDir)SPTushonka.Reflection.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <!-- IL2CPP interop 程序集 -->
+  <ItemGroup>
+    <Reference Include="Assembly-CSharp">
+      <HintPath>$(BepInExInteropDir)Assembly-CSharp.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine">
+      <HintPath>$(BepInExInteropDir)UnityEngine.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>$(BepInExInteropDir)UnityEngine.CoreModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.IMGUIModule">
+      <HintPath>$(BepInExInteropDir)UnityEngine.IMGUIModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UI">
+      <HintPath>$(BepInExInteropDir)UnityEngine.UI.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.TextRenderingModule">
+      <HintPath>$(BepInExInteropDir)UnityEngine.TextRenderingModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.InputLegacyModule">
+      <HintPath>$(BepInExInteropDir)UnityEngine.InputLegacyModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Unity.TextMeshPro">
+      <HintPath>$(BepInExInteropDir)Unity.TextMeshPro.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Il2Cppmscorlib">
+      <HintPath>$(BepInExInteropDir)Il2Cppmscorlib.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <Target Name="PostBuild" AfterTargets="Build">
+    <ItemGroup>
+      <OutputDLL Include="$(TargetPath)" />
+      <License Include="$(ProjectDir)LICENSE" Condition="Exists('$(ProjectDir)LICENSE')" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(OutputDLL);@(License)"
+          DestinationFolder="$(TarkovDir)BepInEx\plugins\$(ProjectName)\" />
+
+    <RemoveDir Directories="$(ProjectDir)release" />
+    <Copy SourceFiles="@(OutputDLL);@(License)"
+          DestinationFolder="$(ProjectDir)release\$(ProjectName)\BepInEx\plugins\$(ProjectName)\" />
+    <ZipDirectory SourceDirectory="$(ProjectDir)release\$(ProjectName)\"
+                  DestinationFile="$(ProjectDir)release\$(ProjectName).zip" />
+  </Target>
+</Project>
