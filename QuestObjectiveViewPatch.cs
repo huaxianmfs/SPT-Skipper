@@ -51,7 +51,7 @@ namespace Terkoiz.Skipper
 
                 if (handoverButton != null)
                 {
-                    // ========== 支线：完全走原版逻辑，一字未动 ==========
+                    //支线
                     SkipperPlugin.LastSeenObjectivesBlock =
                         __instance.transform.parent.gameObject;
 
@@ -78,7 +78,7 @@ namespace Terkoiz.Skipper
                 }
                 else
                 {
-                    // ========== 主线 ==========
+                    //主线
                     var targetParent = __instance.transform.parent;
                     if (targetParent == null) return;
 
