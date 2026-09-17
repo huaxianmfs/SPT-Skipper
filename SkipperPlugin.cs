@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
@@ -18,11 +19,17 @@ namespace Terkoiz.Skipper
         internal static ManualLogSource Logger { get; private set; }
 
         private const string MainSectionName = "Main";
+
         internal static ConfigEntry<bool> ModEnabled;
         internal static ConfigEntry<bool> AlwaysDisplay;
         internal static ConfigEntry<KeyboardShortcut> DisplayHotkey;
 
+        // 支线：原版用
         internal static GameObject LastSeenObjectivesBlock;
+
+        // 主线：单独追踪
+        internal static readonly List<GameObject> TrackedButtons = new List<GameObject>();
+        internal static string CurrentQuestId = "";
 
         public override void Load()
         {
@@ -102,38 +109,40 @@ namespace Terkoiz.Skipper
             if (SkipperPlugin.AlwaysDisplay.Value)
                 return;
 
-            if (SkipperPlugin.LastSeenObjectivesBlock == null)
-                return;
-
-            if (!SkipperPlugin.LastSeenObjectivesBlock.activeSelf)
-                return;
-
             if (SkipperPlugin.DisplayHotkey.Value.IsDown())
-            {
-                SkipperPlugin.Logger.LogInfo("[Skipper] Hotkey IsDown -> show");
                 ChangeButtonVisibility(true);
-            }
 
             if (SkipperPlugin.DisplayHotkey.Value.IsUp())
-            {
-                SkipperPlugin.Logger.LogInfo("[Skipper] Hotkey IsUp -> hide");
                 ChangeButtonVisibility(false);
-            }
         }
 
         private static void ChangeButtonVisibility(bool visible)
         {
-            var buttons = SkipperPlugin.LastSeenObjectivesBlock
-                .GetComponentsInChildren<DefaultUIButton>(includeInactive: true);
-
             int matched = 0;
-            foreach (var button in buttons)
-            {
-                if (button.name != SkipperPlugin.SkipButtonName)
-                    continue;
 
+            // 支线按钮：从 LastSeenObjectivesBlock 子树找
+            if (SkipperPlugin.LastSeenObjectivesBlock != null)
+            {
+                var buttons = SkipperPlugin.LastSeenObjectivesBlock
+                    .GetComponentsInChildren<DefaultUIButton>(true);
+
+                foreach (var b in buttons)
+                {
+                    if (b == null) continue;
+                    if (b.name != SkipperPlugin.SkipButtonName) continue;
+
+                    b.gameObject.SetActive(visible);
+                    matched++;
+                }
+            }
+
+            // 主线按钮：从 TrackedButtons 找
+            SkipperPlugin.TrackedButtons.RemoveAll(b => b == null);
+            foreach (var b in SkipperPlugin.TrackedButtons)
+            {
+                if (b == null) continue;
+                b.SetActive(visible);
                 matched++;
-                button.gameObject.SetActive(visible);
             }
 
             SkipperPlugin.Logger.LogInfo(
